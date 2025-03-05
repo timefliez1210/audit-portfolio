@@ -8,14 +8,24 @@ This repository contains detailed reports and findings from security audits I've
 
 ## 📊 Statistics
 
-- Total Audits Participated: [5]
-- High Severity Findings: [0]
-- Medium Severity Findings: [1]
+- Total Audits Participated: [6]
+- High Severity Findings: [1]
+- Medium Severity Findings: [2]
 - Low Severity Findings: [1]
 
 ## 🏆 Audit Experience
 
 Below is a chronological list of audits I've participated in, along with key findings:
+
+### Zaros Part 2 - January 2025 
+
+- High severity finding: getAutoDeleverageFactor in Market.sol can return 1 even if it should never, while delaverage mode is triggered
+
+- Medium severity finding: Assuming the proposed initial curve in UsdTokenSwapConfig for getPremiumDiscountFactor will get applied it will DoS the whole functions execution as soon as vaultDebtUsdX18 has a negative value
+
+[Compiled Findings](./Zaros/Zaros-Part-2.md)
+
+[Contest Page](https://codehawks.cyfrin.io/c/2025-01-benqi/results)
 
 ### BENQI: Ignite - January 2025 - 4th place
 

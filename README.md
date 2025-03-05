@@ -25,7 +25,7 @@ Below is a chronological list of audits I've participated in, along with key fin
 
 [Compiled Findings](./Zaros/Zaros-Part-2.md)
 
-[Contest Page](https://codehawks.cyfrin.io/c/2025-01-benqi/results)
+[Contest Page](https://codehawks.cyfrin.io/c/2025-01-zaros-part-2/results)
 
 ### BENQI: Ignite - January 2025 - 4th place
 

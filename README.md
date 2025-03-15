@@ -8,7 +8,7 @@ This repository contains detailed reports and findings from security audits I've
 
 ## 📊 Statistics
 
-- Total Audits Participated: [6]
+- Total Audits Participated: [3]
 - High Severity Findings: [1]
 - Medium Severity Findings: [2]
 - Low Severity Findings: [1]
@@ -17,7 +17,7 @@ This repository contains detailed reports and findings from security audits I've
 
 Below is a chronological list of audits I've participated in, along with key findings:
 
-### Zaros Part 2 - January 2025 
+### Zaros Part 2 - January 2025 - 10th place
 
 - High severity finding: getAutoDeleverageFactor in Market.sol can return 1 even if it should never, while delaverage mode is triggered
 

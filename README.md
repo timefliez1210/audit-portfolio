@@ -8,7 +8,7 @@ This repository contains detailed reports and findings from security audits I've
 
 ## 📊 Statistics
 
-- Total Audits Participated: [3]
+- Total Audits Participated: [5]
 - High Severity Findings: [1]
 - Medium Severity Findings: [2]
 - Low Severity Findings: [1]
@@ -16,6 +16,20 @@ This repository contains detailed reports and findings from security audits I've
 ## 🏆 Audit Experience
 
 Below is a chronological list of audits I've participated in, along with key findings:
+
+### Gamma Limit Orders - April 2025
+
+- Informational severity finding: Non Inclusion of actual target tick in calculated tick range causes spread on limit orders
+
+[Compiled Findings](./Gamma-Limit-Orders/1-Gamma-Limit-Orders.md)
+
+[Contest Page](https://cantina.xyz/competitions/aaf79192-6ea7-4b1e-aed7-3d23212dd0f1)
+
+### Regnum Aurum Aquisition Corp - February 2025 - 
+
+[Compiled Findings](./Zaros/Zaros-Part-2.md)
+
+[Contest Page](https://codehawks.cyfrin.io/c/2025-01-zaros-part-2/results)
 
 ### Zaros Part 2 - January 2025 - 10th place
 
@@ -29,7 +43,7 @@ Below is a chronological list of audits I've participated in, along with key fin
 
 ### BENQI: Ignite - January 2025 - 4th place
 
-- Private Audit
+- Private Audit Competition
 
 [Contest Page](https://codehawks.cyfrin.io/c/2025-01-benqi/results)
 

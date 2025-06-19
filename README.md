@@ -9,14 +9,20 @@ This repository contains detailed reports and findings from security audits I've
 
 ## Statistics
 
-- Total Audits Participated: [5]
-- High Severity Findings: [9]
-- Medium Severity Findings: [13]
+- Total Audits Participated: [6]
+- High Severity Findings: [10]
+- Medium Severity Findings: [14]
 - Low Severity Findings: [2]
 
 ## Audit Experience
 
 Below is a chronological list of audits I've participated in, along with key findings:
+
+### Alchemix V3 - May 2025 - TBD
+
+- **Humble contribution of two lesser duplicated findings**
+- **[Compiled Findings](./Alchemix-v3/Alchemix.md)**
+- **[Contest Page](https://cantina.xyz/competitions/e68909e6-3491-4a94-a707-ecf0c89cf72a)**
 
 ### Regnum Aurum Aquisition Corp - February 2025 - TBD
 
@@ -60,4 +66,3 @@ Common tools and approaches I use:
 For audit inquiries or security consultations:
 - Twitter: [@0xTimefliez](https://x.com/0xTimefliez)
 - Email: [crfabig@gmail.com](mailto:crfabig@gmail.com)
-

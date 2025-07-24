@@ -2,6 +2,12 @@
 
 Welcome to my security audit portfolio repository. This collection showcases my participation in various smart contract security audits and highlights my contributions to securing blockchain projects.
 
+## Public Profiles
+
+CodeHawks by Cyfrin [0xTimefliez](https://profiles.cyfrin.io/u/0xtimefliez)
+
+
+Cantina [timefliez](https://cantina.xyz/u/timefliez)
 
 ## Overview
 

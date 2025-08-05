@@ -1,14 +1,12 @@
 # Security Audit Portfolio
 
-This Repo gives you a quick overview of what I have done after school and keeps track of my humble contributions to make web3 a safer place.
+This Repo gives you a quick overview of what I have done after school and keeps track of my contributions to make web3 a safer place.
 
 ## Public Profiles
 
 CodeHawks [0xTimefliez](https://profiles.cyfrin.io/u/0xtimefliez)
 
-
 Cantina [timefliez](https://cantina.xyz/u/timefliez)
-
 
 ## A Quick about Me
 
@@ -26,83 +24,94 @@ Cantina [timefliez](https://cantina.xyz/u/timefliez)
 
 2023 - 2024 - Transitioned into an own Diving Business with Landside Property and Boat
 
-
 September 2024 - Sold the Diving Business and started Web3 Security
 
 And now here I am:
 
-
 ## My Top 3 Findings:
 
-1. From Zaros Part 2 on Codehawks:
+1. **From Ammalgam DLEX on Cantina:**
 
-  `getAutoDeleverageFactor` in `Market.sol` can return 1 even if it should never, while delaverage mode is triggered. This could lead to a failure in the deleveraging process, putting funds at risk.
+  Naturally occurring DoS of _repay() due to rounding in calcTrancheAtStartOfLiquidation(). [Find the details here](./Top3/first.md)
 
-2. From Ammalgam DLEX on Cantina:
+2. **From Zaros Part 2 on Codehawks:**
 
-  Repayment of debt blocked incl. liquidations.
+  `getAutoDeleverageFactor` in `Market.sol` can return 1 even if it should never, while delaverage mode is triggered. This could lead to a failure in the deleveraging process, putting funds at risk. [Find the details here](./Top3/second.md)
 
-3. From Zaros Part 2 on Codehawks:
+3. **From Zaros Part 2 on Codehawks:**
 
-  Assuming the proposed initial curve in `UsdTokenSwapConfig` for `getPremiumDiscountFactor` will get applied it will DoS the whole functions execution as soon as `vaultDebtUsdX18` has a negative value. This could halt key functionalities of the protocol.
+  Assuming the proposed initial curve in `UsdTokenSwapConfig` for `getPremiumDiscountFactor` will get applied it will DoS the whole functions execution as soon as `vaultDebtUsdX18` has a negative value. This could halt key functionalities of the protocol. [Find the details here](./Top3/third.md)
 
 ## Statistics
 
-- Total Audits Participated: [7]
-- High Severity Findings: [13]
+- Total Audits Participated: [9]
+- High Severity Findings: [15]
 - Medium Severity Findings: [14]
 - Low Severity Findings: [3]
 
-## Audit Experience
+## Contest Experience
 
 Below are the contests I have participated in, in chronological order
 
-### Ammalgam DLEX - July 2025
+### **Ammalgam DLEX - July 2025**
+
+- Contribution of 2 High Severity
+
+- **Solo High severity finding:**
+
+  Naturally occurring DoS of _repay() due to rounding in calcTrancheAtStartOfLiquidation().
+
+- [Compiled Findings](./Ammalgam/ammalgam.md)
+- [Contest Page](https://cantina.xyz/code/02c29467-cb27-4beb-b2ef-500ad95e1a51/overview)
 
 ### Telcoin Network - July 2025
 
-### Jigsaw Protocol - June 2025
+### **Jigsaw Protocol - June 2025**
 
-- **Humble contribution of 3 High Severity and 1 Low Severity Finding**
-- **[Compiled Findings](./Jigsaw/Jigsaw.md)**
-- **[Contest Page](https://cantina.xyz/competitions/7a40c849-0b35-4128-b084-d9a83fd533ea)**
+- Contribution of 3 High Severity and 1 Low Severity Finding
+- [Compiled Findings](./Jigsaw/Jigsaw.md)
+- [Contest Page](https://cantina.xyz/competitions/7a40c849-0b35-4128-b084-d9a83fd533ea)
 
-### Alchemix V3 - May 2025
+### **Alchemix V3 - May 2025**
 
-- **Humble contribution of two lesser duplicated findings**
-- **[Compiled Findings](./Alchemix-v3/Alchemix.md)**
-- **[Contest Page](https://cantina.xyz/competitions/e68909e6-3491-4a94-a707-ecf0c89cf72a)**
+- 1 High and 1 Medium Severity Finding
+- [Compiled Findings](./Alchemix-v3/Alchemix.md)
+- [Contest Page](https://cantina.xyz/competitions/e68909e6-3491-4a94-a707-ecf0c89cf72a)
 
-### Gamma Limit Orders - April 2025
+### **Gamma Limit Orders - April 2025**
 
-- **Informational severity finding:** Non Inclusion of actual target tick in calculated tick range causes spread on limit orders.
-- **[Compiled Findings](./Gamma-Limit-Orders/Gamma-Limit-Orders.md)**
-- **[Contest Page](https://cantina.xyz/competitions/aaf79192-6ea7-4b1e-aed7-3d23212dd0f1)**
+- 1 Informational Finding
+- [Compiled Findings](./Gamma-Limit-Orders/Gamma-Limit-Orders.md)
+- [Contest Page](https://cantina.xyz/competitions/aaf79192-6ea7-4b1e-aed7-3d23212dd0f1)
 
-### Regnum Aurum Aquisition Corp - February 2025
+### **Regnum Aurum Aquisition Corp - February 2025**
 
-- **A total of 20 Valid findings contributed**
-- **[Compiled Findings](./RAAC/Raac-Core.md)**
-- **[Contest Page](https://codehawks.cyfrin.io/c/2025-02-raac)**
+- A total of 20 Valid findings contributed
+- [Compiled Findings](./RAAC/Raac-Core.md)
+- [Contest Page](https://codehawks.cyfrin.io/c/2025-02-raac)
 
 
-### Zaros Part 2 - January 2025
+### **Zaros Part 2 - January 2025**
 
-- **High severity finding:** `getAutoDeleverageFactor` in `Market.sol` can return 1 even if it should never, while delaverage mode is triggered. This could lead to a failure in the deleveraging process, putting funds at risk.
-- **Medium severity finding:** Assuming the proposed initial curve in `UsdTokenSwapConfig` for `getPremiumDiscountFactor` will get applied it will DoS the whole functions execution as soon as `vaultDebtUsdX18` has a negative value. This could halt key functionalities of the protocol.
-- **[Compiled Findings](./Zaros/Zaros-Part-2.md)**
-- **[Contest Page](https://codehawks.cyfrin.io/c/2025-01-zaros-part-2/results)**
+- **High severity finding:**
 
-### BENQI: Ignite - January 2025 - 4th place
+  `getAutoDeleverageFactor` in `Market.sol` can return 1 even if it should never, while delaverage mode is triggered. This could lead to a failure in the deleveraging process, putting funds at risk.
+- **Medium severity finding:**
 
-- **Private Audit Competition**
-- **[Contest Page](https://codehawks.cyfrin.io/c/2025-01-benqi/results)**
+  Assuming the proposed initial curve in `UsdTokenSwapConfig` for `getPremiumDiscountFactor` will get applied it will DoS the whole functions execution as soon as `vaultDebtUsdX18` has a negative value. This could halt key functionalities of the protocol.
+- [Compiled Findings](./Zaros/Zaros-Part-2.md)
+- [Contest Page](https://codehawks.cyfrin.io/c/2025-01-zaros-part-2/results)
 
-### Alchemix - Transmuter - December 2024
+### **BENQI: Ignite - January 2025 - 4th place**
 
-- **Medium severity finding:** Incorrect asset accounting in `_harvestAndReport` function. This could lead to a miscalculation of rewards and potential loss of yield for users.
-- **[Compiled Findings](./Alchemix-Transmuter/Alchemix-Transmuter.md)**
-- **[Contest Page](https://codehawks.cyfrin.io/c/2024-12-alchemix/results)**
+- Private Audit Competition
+- [Contest Page](https://codehawks.cyfrin.io/c/2025-01-benqi/results)
+
+### **Alchemix - Transmuter - December 2024**
+
+- Contribution of 1 Medium Severity Finding
+- [Compiled Findings](./Alchemix-Transmuter/Alchemix-Transmuter.md)
+- [Contest Page](https://codehawks.cyfrin.io/c/2024-12-alchemix/results)
 
 ## Tools & Methodologies
 

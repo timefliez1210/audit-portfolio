@@ -426,7 +426,7 @@ contract PoC is Test {
 
 ```
 
-## High 2 - Repayment of debt blocked incl. liquidations
+## Informational 1 - Repayment of debt blocked incl. liquidations
 
 ## Summary
 

@@ -55,7 +55,7 @@ Below are the contests I have participated in, in chronological order
 
 ### **Ammalgam DLEX - July 2025**
 
-- Contribution of 2 High Severity
+- Contribution of 1 High Severity (Solo) and 1 Info Finding
 
 - **Solo High severity finding:**
 

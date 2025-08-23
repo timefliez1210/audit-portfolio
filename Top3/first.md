@@ -1,4 +1,4 @@
-# Solo High - Naturally occurring DoS of _repay() due to rounding in calcTrancheAtStartOfLiquidation()
+# Solo Medium - Naturally occurring DoS of _repay() due to rounding in calcTrancheAtStartOfLiquidation()
 
 ## Summary
 

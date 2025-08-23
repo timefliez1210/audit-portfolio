@@ -45,8 +45,8 @@ And now here I am:
 ## Statistics
 
 - Total Audits Participated: [9]
-- High Severity Findings: [15]
-- Medium Severity Findings: [14]
+- High Severity Findings: [14]
+- Medium Severity Findings: [15]
 - Low Severity Findings: [3]
 
 ## Contest Experience
@@ -55,9 +55,9 @@ Below are the contests I have participated in, in chronological order
 
 ### **Ammalgam DLEX - July 2025**
 
-- Contribution of 1 High Severity (Solo) and 1 Info Finding
+- Contribution of 1 Medium Severity (Solo) and 1 Info Finding
 
-- **Solo High severity finding:**
+- **Solo Medium severity finding:**
 
   Naturally occurring DoS of _repay() due to rounding in calcTrancheAtStartOfLiquidation().
 

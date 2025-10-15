@@ -8,25 +8,6 @@ CodeHawks [0xTimefliez](https://profiles.cyfrin.io/u/0xtimefliez)
 
 Cantina [timefliez](https://cantina.xyz/u/timefliez)
 
-## A Quick about Me
-
-2009 - Finished School
-
-2009/2010 - Mandatory Military Service
-
-2010 - 2014 - Studied Physics at the Humboldt University in Berlin
-
-2015/2016 - Worked at Corporate Consultancy
-
-2016 - 2020 - Freelance Frontend Work with focus on SEO Performance
-
-2021 - 2024 - Dive Instructor for Recreational and Technical Diving
-
-2023 - 2024 - Transitioned into an own Diving Business with Landside Property and Boat
-
-September 2024 - Sold the Diving Business and started Web3 Security
-
-And now here I am:
 
 ## My Top 3 Findings:
 

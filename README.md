@@ -19,11 +19,11 @@ This repo provides a quick overview of my journey as a security researcher in th
    Naturally occurring DoS of `_repay()` due to rounding in `calcTrancheAtStartOfLiquidation()`.  
    → [View Finding](./top3/first.md)
 
-2. **Solo High - Zaros Part 2 on Codehawks**  
+2. **High - Zaros Part 2 on Codehawks**  
    `getAutoDeleverageFactor` in `Market.sol` can return 1 even if it should never, while deleverage mode is triggered.  
    → [View Finding](./top3/second.md)
 
-3. **Solo Medium - Zaros Part 2 on Codehawks**  
+3. **Medium - Zaros Part 2 on Codehawks**  
    Proposed initial curve in `UsdTokenSwapConfig::getPremiumDiscountFactor` will DoS execution when `vaultDebtUsdX18` is negative.  
    → [View Finding](./top3/third.md)
 
@@ -33,7 +33,7 @@ This repo provides a quick overview of my journey as a security researcher in th
 
 | Metric | Count |
 |--------|-------|
-| Total Audits Participated | 9 |
+| Total Audits Participated | 10 |
 | High Severity Findings | 15 |
 | Medium Severity Findings | 15 |
 | Low Severity Findings | 2 |

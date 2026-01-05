@@ -2,55 +2,54 @@
 
 ## Summary
 
-```calcTranchAtStartOfLiquidation``` can produce ```inputQ64 = 0``` during repayments due to a rounding issue, preventing users to repay their debt, or being liquidated, if ```netDebtXorYAssets``` becomes way smaller than ```activeLiquidityAssets```. This will happen during rapid market movements (consecutive buy or sell periods), or can happen when the pool constellation drastically changes.
+`calcTranchAtStartOfLiquidation` can produce `inputQ64 = 0` during repayments due to a rounding issue, preventing users to repay their debt, or being liquidated, if `netDebtXorYAssets` becomes way smaller than `activeLiquidityAssets`. This will happen during rapid market movements (consecutive buy or sell periods), or can happen when the pool constellation drastically changes.
 
 ## Finding Description
 
-Consider the following function in ```./library/Saturation.sol```:
+Consider the following function in `./library/Saturation.sol`:
 
 ```solidity
-    function calcTrancheAtStartOfLiquidation(
-        uint256 netDebtXorYAssets,
-        uint256 activeLiquidityAssets,
-        uint256 trancheSpanInTicks,
-        uint256 desiredThresholdMag2,
-        bool netDebtX
-    ) internal pure returns (int256 trancheStartOfLiquidationMag2) {
-        int16 direction;
-        uint256 inputQ64;
+function calcTrancheAtStartOfLiquidation(
+    uint256 netDebtXorYAssets,
+    uint256 activeLiquidityAssets,
+    uint256 trancheSpanInTicks,
+    uint256 desiredThresholdMag2,
+    bool netDebtX
+) internal pure returns (int256 trancheStartOfLiquidationMag2) {
+    int16 direction;
+    uint256 inputQ64;
 
-        ///// ***** SNIP ***** /////
+    ///// ***** SNIP ***** /////
 
-            unchecked {
-                inputQ64 =
-                    // top is uint128 * MAG2 * Q6.72 which fits in 211, we add 32 before dividing, then
-                    // add another 32 to make it a Q64 number. bottom is same. round down.
-@>                  Convert.mulDiv(
-@>                      netDebtXorYAssets * SATURATION_TIME_BUFFER_IN_MAG2,
-@>                      baseToPowerOfCount * Q32,
-@>                      (baseToPowerOfCount - Q72) *
-@>                          activeLiquidityAssets *
-@>                          desiredThresholdMag2,
-@>                      false
-                    ) *
-                    Q32;
-            }
-
-            direction = int16(netDebtX ? INT_ONE : INT_NEGATIVE_ONE);
+        unchecked {
+            inputQ64 =
+                // top is uint128 * MAG2 * Q6.72 which fits in 211, we add 32 before dividing, then
+                // add another 32 to make it a Q64 number. bottom is same. round down.
+@>              Convert.mulDiv(
+@>                  netDebtXorYAssets * SATURATION_TIME_BUFFER_IN_MAG2,
+@>                  baseToPowerOfCount * Q32,
+@>                  (baseToPowerOfCount - Q72) *
+@>                      activeLiquidityAssets *
+@>                      desiredThresholdMag2,
+@>                  false
+                ) *
+                Q32;
         }
 
-@>      int256 tick = TickMath.getTickAtPrice(inputQ64 ** 2);
+        direction = int16(netDebtX ? INT_ONE : INT_NEGATIVE_ONE);
+    }
+
+@>  int256 tick = TickMath.getTickAtPrice(inputQ64 ** 2);
 
 
-		///// ***** SNIP ***** /////
+	///// ***** SNIP ***** /////
 ```
 
-During the call of ```_repay()``` within ```AmmalgamPair.sol``` the call chain will pass  ```calcTrancheAtStartOfLiquidation``` as seen above. The described issue here arises for small remaining balances of ```netDebtXorYAsset``` which would result in ```inputQ64``` being assigned to 0, which will than be passed into ```TickMath.getTickAtPrice()```, however this call will than ultimately revert with ```PriceOutOfBounds()```, DoSing the operation of the ```
-_repay()``` function within ```AmmalgamPair.sol```, which is being called when a user wants to repay his positions, or during liquidation. Either, locking the user collateral (if he would like to repay and sell it) or make him unliquidatable, which evidently than causes bad debt.
+During the call of `_repay()` within `AmmalgamPair.sol` the call chain will pass `calcTrancheAtStartOfLiquidation` as seen above. The described issue here arises for small remaining balances of `netDebtXorYAsset` which would result in `inputQ64` being assigned to 0, which will then be passed into `TickMath.getTickAtPrice()`, however this call will then ultimately revert with `PriceOutOfBounds()`, DoSing the operation of the `_repay()` function within `AmmalgamPair.sol`, which is being called when a user wants to repay his positions, or during liquidation. Either, locking the user collateral (if he would like to repay and sell it) or make him unliquidatable, which evidently then causes bad debt.
 
 ## Impact Explanation
 
-DoS of the ```AmmalgamPair._repay()``` function can prevent users from repaying their debt, making them lose their collateral, it can freeze the collateral due to inability to repay, and affect liquidations also dependent on the ```_repay()``` logic. A high impact seems accurate.
+DoS of the `AmmalgamPair._repay()` function can prevent users from repaying their debt, making them lose their collateral, it can freeze the collateral due to inability to repay, and affect liquidations also dependent on the `_repay()` logic. A high impact seems accurate.
 
 ## Likelihood Explanation
 
@@ -58,7 +57,7 @@ The pair configuration, seen in the PoC below, is nothing special and is basical
 
 ## Proof of Concept
 
-Copy and paste the following Code into a new file ```./test/PoC.t.sol``` and execute ```forge test --mt test_PoC_roundingWithinSaturationPreventsRepay```, ```forge test --mt test_PoC_roundingPreventsRepaySelloffExtendedEdition``` or/and ```forge test --mt test_PoC_roundingWithinSaturationPreventsRepayTradingRefreshLimitedFeeWasteEdition```:
+Copy and paste the following Code into a new file `./test/PoC.t.sol` and execute `forge test --mt test_PoC_roundingWithinSaturationPreventsRepay`, `forge test --mt test_PoC_roundingPreventsRepaySelloffExtendedEdition` or/and `forge test --mt test_PoC_roundingWithinSaturationPreventsRepayTradingRefreshLimitedFeeWasteEdition`:
 
 ```solidity
 // SPDX-License-Identifier: UNLICENSED
@@ -137,10 +136,9 @@ contract PoC is Test {
         console.log("Y Token Pool", tokenY.balanceOf(address(pair)));
         vm.startPrank(alice);
         uint256 debtToRepay = pair.tokens(BORROW_X).balanceOf(alice);
-        pair.sync(); // This can be commented out as well, I thought however it might fix the issue; Spoiler: it did not
+        pair.sync();
         tokenX.transfer(address(pair), debtToRepay);
 
-        // vm.expectRevert();
         pair.repay(alice);
         vm.stopPrank();
     }
@@ -172,7 +170,6 @@ contract PoC is Test {
         uint256 debtToRepay = pair.tokens(BORROW_X).balanceOf(alice);
         tokenX.transfer(address(pair), debtToRepay);
 
-        // vm.expectRevert();
         pair.repay(alice);
         vm.stopPrank();
     }
@@ -203,12 +200,10 @@ contract PoC is Test {
         uint256 debtToRepay = pair.tokens(BORROW_X).balanceOf(alice);
         tokenX.transfer(address(pair), debtToRepay);
 
-        // vm.expectRevert();
         pair.repay(alice);
         vm.stopPrank();
     }
 }
-
 ```
 
 Running above tests will produce the following logs:
@@ -267,22 +262,22 @@ Showcasing that expected reverts (even on an extended period, during a selloff p
 
 ## Recommendation
 
-A possible solution for the rounding issue would be to simply pass in ```true``` however I did not investigate other implications:
+A possible solution for the rounding issue would be to simply pass in `true` however I did not investigate other implications:
 
 ```diff
 unchecked {
-                inputQ64 =
-                    Convert.mulDiv(
-                        netDebtXorYAssets * SATURATION_TIME_BUFFER_IN_MAG2,
-                        baseToPowerOfCount * Q32,
-                        (baseToPowerOfCount - Q72) *
-                            activeLiquidityAssets *
-                            desiredThresholdMag2,
--                           false
-+                           true
-                    ) *
-                    Q32;
-            }
+            inputQ64 =
+                Convert.mulDiv(
+                    netDebtXorYAssets * SATURATION_TIME_BUFFER_IN_MAG2,
+                    baseToPowerOfCount * Q32,
+                    (baseToPowerOfCount - Q72) *
+                        activeLiquidityAssets *
+                        desiredThresholdMag2,
+-                       false
++                       true
+                ) *
+                Q32;
+        }
 ```
 
 
@@ -423,5 +418,4 @@ contract PoC is Test {
         vm.stopPrank();
     }
 }
-
 ```

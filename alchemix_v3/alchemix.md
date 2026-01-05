@@ -1,9 +1,41 @@
-# High 1 - Liquidation of users can cause absolute protocol insolvency, even towards healthy positions
+# Alchemix V3 - Findings Report
 
-## Summary
+## Table of Contents
+- High Risk Findings
+    - [H-01. Liquidation of users can cause absolute protocol insolvency, even towards healthy positions](#H-01)
+- Medium Risk Findings
+    - [M-01. Arithmetic Underflow in _subDebt causes liquidations to be unexecutable beyond a certain price drop](#M-01)
+
+---
+
+## Contest Summary
+
+**Sponsor:** Alchemix
+
+**Dates:** TBD
+
+---
+
+## Results Summary
+
+| Severity | Count |
+|----------|-------|
+| High     | 1     |
+| Medium   | 1     |
+| Low      | 0     |
+
+---
+
+# High Risk Findings
+
+## <a id='H-01'></a>H-01. Liquidation of users can cause absolute protocol insolvency, even towards healthy positions
+
+### Summary
+
 During the liquidation of a user, should a de-peg of the underlying asset occur, the AlchemistV3::_liquidate function will attempt to transfer an amount of yield token to the transmuter to liquidate existing under collateralized positions, however the amount being transferred is not capped towards the deposited underlying yield token, potentially causing users being unable to claim their not liquidated positions, therefore making the AlchemistV3 insolvent.
 
-## Finding Description
+### Finding Description
+
 Consider the following code within AlchemistV3::_liquidate:
 
 ```solidity
@@ -50,16 +82,20 @@ function convertUnderlyingTokensToYield(uint256 amount) public view returns (uin
 	return amount * 10 ** decimals / ITokenAdapter(tokenAdapter).price();
 }
 ```
+
 If the yield token de-pegs from it's original value the Alchemist will transfer out an unsanitized amount of yield tokens towards the transmuter, which can easily be higher than the originally deposited amount (the accounts collateral CDP). By doing so, the Alchemist actively pushes himself into insolvency regarding not liquidated, healthy positions. In short, by liquidating unhealthy positions the Alchemist becomes insolvent towards healthy positions, as shown in the PoC below.
 
-## Impact Explanation
+### Impact Explanation
+
 Described issue directly effects the solvency invariant of the protocol and furthermore shows that the liquidation logic, which is meant to protect protocol solvency, even makes it worse. Therefore the impact is high.
 
-## Likelihood Explanation
-Since the protocol expects de-pegs and no pre-condition have to be met the likelihood is high
+### Likelihood Explanation
 
-## Proof of Concept
-Create a file ./src/test/PoC.t.sol, copy and paste below contents into it and execute forge test --fork-url ${YOUR_RPC_URL} --mt test_PoC_insolvencyThroughLiquidation --fork-block-number 21835200
+Since the protocol expects de-pegs and no pre-condition have to be met the likelihood is high.
+
+### Proof of Concept
+
+Create a file ./src/test/PoC.t.sol, copy and paste below contents into it and execute `forge test --fork-url ${YOUR_RPC_URL} --mt test_PoC_insolvencyThroughLiquidation --fork-block-number 21835200`
 
 ```solidity
 // SPDX-License-Identifier: GPL-3.0-or-later
@@ -279,9 +315,11 @@ contract PoC is Test {
 	}
 }
 ```
+
 Running above test, will simply showcase the test succeeding. The asserts, vm.expectRevert() and comments should speak for themselves.
 
-## Recommendation
+### Recommendation
+
 Protect the solvency of the AlchemistV3 towards solvent positions by capping the amount transferred to the Transmuter to a maximum of user deposited assets of insolvent positions like such:
 
 ```diff
@@ -305,12 +343,18 @@ function _liquidate(uint256 accountId) internal returns (uint256 debtAmount, uin
 }
 ```
 
-# Medium 1 - Arithmetic Underflow in _subDebt causes liquidations to be unexecutable beyond a certain price drop
+---
 
-## Summary
+# Medium Risk Findings
+
+## <a id='M-01'></a>M-01. Arithmetic Underflow in _subDebt causes liquidations to be unexecutable beyond a certain price drop
+
+### Summary
+
 An arithmetic underflow within the AlchemixV3::_subDebt function, used during liquidation, can prevent users from being liquidated, if the yield token de-pegs beyond a certain threshold.
 
-## Finding Description
+### Finding Description
+
 Consider the following code snippets:
 
 ```solidity
@@ -342,14 +386,17 @@ function convertYieldTokensToUnderlying(uint256 amount) public view returns (uin
 
 A sudden price drop (increased token supply) in yield token, can cause tooFree to overflow account.rawLocked, if a user holds multiple positions, resulting in liquidations failing during a period where they certainly should not fail.
 
-## Impact Explanation
+### Impact Explanation
+
 Failure to liquidate bad debt as generally high impact, since it will just continue to accumulate over time.
 
-## Likelihood Explanation
+### Likelihood Explanation
+
 The Likelihood however, is quite subjective, since it is a relatively sharp price drop and protocols Alchemix integrates with (presumably) are considered relatively safe. Therefore I would rate it is a medium.
 
-## Proof of Concept
-Create a file ./src/test/PoC.t.sol, copy and paste below contents into it and execute forge test --fork-url ${YOUR_RPC_URL} --mt test_PoC_underflowInLiquidation --fork-block-number 21835200
+### Proof of Concept
+
+Create a file ./src/test/PoC.t.sol, copy and paste below contents into it and execute `forge test --fork-url ${YOUR_RPC_URL} --mt test_PoC_underflowInLiquidation --fork-block-number 21835200`
 
 ```solidity
 // SPDX-License-Identifier: GPL-3.0-or-later
@@ -543,6 +590,7 @@ contract PoC is Test {
 	}
 }
 ```
+
 Running the test above as described will output:
 
 ```solidity
@@ -558,9 +606,11 @@ Encountered 1 failing test in src/test/PoC.t.sol:PoC
 
 Encountered a total of 1 failing tests, 0 tests succeeded
 ```
+
 Showcasing the above described underflow.
 
-## Recommendation
+### Recommendation
+
 Safeguard AlchemixV3::_subDebt against this case like:
 
 ```diff

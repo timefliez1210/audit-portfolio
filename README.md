@@ -1,127 +1,111 @@
 # Security Audit Portfolio
 
-This Repo gives you a quick overview of what I have done after school and keeps track of my contributions to make web3 a safer place.
+This repo provides a quick overview of my journey as a security researcher in the web3 space.
 
-## Public Profiles
+---
 
-CodeHawks [0xTimefliez](https://profiles.cyfrin.io/u/0xtimefliez)
+## 🔗 Public Profiles
 
-Cantina [timefliez](https://cantina.xyz/u/timefliez)
+| Platform | Profile |
+|----------|---------|
+| CodeHawks | [0xTimefliez](https://profiles.cyfrin.io/u/0xtimefliez) |
+| Cantina | [timefliez](https://cantina.xyz/u/timefliez) |
 
-## A Quick about Me
+---
 
-2009 - Finished School
+## 🏆 Top 3 Findings
 
-2009/2010 - Mandatory Military Service
+1. **Solo Medium - Ammalgam DLEX on Cantina**  
+   Naturally occurring DoS of `_repay()` due to rounding in `calcTrancheAtStartOfLiquidation()`.  
+   → [View Finding](./top3/first.md)
 
-2010 - 2014 - Studied Physics at the Humboldt University in Berlin
+2. **Solo High - Zaros Part 2 on Codehawks**  
+   `getAutoDeleverageFactor` in `Market.sol` can return 1 even if it should never, while deleverage mode is triggered.  
+   → [View Finding](./top3/second.md)
 
-2015/2016 - Worked at Corporate Consultancy
+3. **Solo Medium - Zaros Part 2 on Codehawks**  
+   Proposed initial curve in `UsdTokenSwapConfig::getPremiumDiscountFactor` will DoS execution when `vaultDebtUsdX18` is negative.  
+   → [View Finding](./top3/third.md)
 
-2016 - 2020 - Freelance Frontend Work with focus on SEO Performance
+---
 
-2021 - 2024 - Dive Instructor for Recreational and Technical Diving
+## 📊 Statistics
 
-2023 - 2024 - Transitioned into an own Diving Business with Landside Property and Boat
+| Metric | Count |
+|--------|-------|
+| Total Audits Participated | 9 |
+| High Severity Findings | 15 |
+| Medium Severity Findings | 15 |
+| Low Severity Findings | 2 |
+| Informational Findings | 3 |
 
-September 2024 - Sold the Diving Business and started Web3 Security
+---
 
-And now here I am:
+## 📋 Contest Experience
 
-## My Top 3 Findings:
+Contests listed in chronological order (newest first):
 
-1. **From Ammalgam DLEX on Cantina:**
+### Kuru CLOB — August 2025
+- **Findings:** 1 High, 1 Medium
+- [Compiled Findings](./kuru/kuru.md) | [Contest Page](https://cantina.xyz/code/cdce21ba-b787-4df4-9c56-b31d085388e7/overview/leaderboard)
 
-  Naturally occurring DoS of _repay() due to rounding in calcTrancheAtStartOfLiquidation(). [Find the details here](./Top3/first.md)
+### Ammalgam DLEX — July 2025 (4th Place 🏅)
+- **Findings:** 1 Medium (Solo), 1 Informational
+- **Highlight:** Solo Medium - DoS of `_repay()` due to rounding
+- [Compiled Findings](./ammalgam/ammalgam.md) | [Contest Page](https://cantina.xyz/code/02c29467-cb27-4beb-b2ef-500ad95e1a51/overview)
 
-2. **From Zaros Part 2 on Codehawks:**
+### Telcoin — June 2025
+- **Findings:** 1 Informational
+- [Compiled Findings](./telcoin/telcoin.md) | [Contest Page](https://cantina.xyz/competitions/26d5255b-6f68-46cf-be55-81dd565d9d16)
 
-  `getAutoDeleverageFactor` in `Market.sol` can return 1 even if it should never, while delaverage mode is triggered. This could lead to a failure in the deleveraging process, putting funds at risk. [Find the details here](./Top3/second.md)
+### Jigsaw Protocol — May 2025
+- **Findings:** 3 High, 1 Low
+- [Compiled Findings](./jigsaw/jigsaw.md) | [Contest Page](https://cantina.xyz/competitions/7a40c849-0b35-4128-b084-d9a83fd533ea)
 
-3. **From Zaros Part 2 on Codehawks:**
+### Alchemix V3 — May 2025
+- **Findings:** 1 High, 1 Medium
+- [Compiled Findings](./alchemix_v3/alchemix.md) | [Contest Page](https://cantina.xyz/competitions/e68909e6-3491-4a94-a707-ecf0c89cf72a)
 
-  Assuming the proposed initial curve in `UsdTokenSwapConfig` for `getPremiumDiscountFactor` will get applied it will DoS the whole functions execution as soon as `vaultDebtUsdX18` has a negative value. This could halt key functionalities of the protocol. [Find the details here](./Top3/third.md)
+### Gamma Limit Orders — April 2025
+- **Findings:** 1 Informational
+- [Compiled Findings](./gamma_limit_orders/gamma_limit_orders.md) | [Contest Page](https://cantina.xyz/competitions/aaf79192-6ea7-4b1e-aed7-3d23212dd0f1)
 
-## Statistics
+### Regnum Aurum Acquisition Corp — February 2025
+- **Findings:** 20 Valid (8 High, 11 Medium, 1 Low)
+- [Compiled Findings](./raac/raac_core.md) | [Contest Page](https://codehawks.cyfrin.io/c/2025-02-raac)
 
-- Total Audits Participated: [9]
-- High Severity Findings: [14]
-- Medium Severity Findings: [15]
-- Low Severity Findings: [3]
+### Zaros Part 2 — January 2025
+- **Findings:** 1 High, 1 Medium
+- **Highlights:**
+  - High: `getAutoDeleverageFactor` can return 1 during deleverage mode
+  - Medium: Premium discount factor curve DoS on negative vault debt
+- [Compiled Findings](./zaros/zaros_part_2.md) | [Contest Page](https://codehawks.cyfrin.io/c/2025-01-zaros-part-2/results)
 
-## Contest Experience
-
-Below are the contests I have participated in, in chronological order
-
-### **Ammalgam DLEX - July 2025**
-
-- Contribution of 1 Medium Severity (Solo) and 1 Info Finding
-
-- **Solo Medium severity finding:**
-
-  Naturally occurring DoS of _repay() due to rounding in calcTrancheAtStartOfLiquidation().
-
-- [Compiled Findings](./Ammalgam/ammalgam.md)
-- [Contest Page](https://cantina.xyz/code/02c29467-cb27-4beb-b2ef-500ad95e1a51/overview)
-
-### Telcoin Network - July 2025
-
-### **Jigsaw Protocol - June 2025**
-
-- Contribution of 3 High Severity and 1 Low Severity Finding
-- [Compiled Findings](./Jigsaw/Jigsaw.md)
-- [Contest Page](https://cantina.xyz/competitions/7a40c849-0b35-4128-b084-d9a83fd533ea)
-
-### **Alchemix V3 - May 2025**
-
-- 1 High and 1 Medium Severity Finding
-- [Compiled Findings](./Alchemix-v3/Alchemix.md)
-- [Contest Page](https://cantina.xyz/competitions/e68909e6-3491-4a94-a707-ecf0c89cf72a)
-
-### **Gamma Limit Orders - April 2025**
-
-- 1 Informational Finding
-- [Compiled Findings](./Gamma-Limit-Orders/Gamma-Limit-Orders.md)
-- [Contest Page](https://cantina.xyz/competitions/aaf79192-6ea7-4b1e-aed7-3d23212dd0f1)
-
-### **Regnum Aurum Aquisition Corp - February 2025**
-
-- A total of 20 Valid findings contributed
-- [Compiled Findings](./RAAC/Raac-Core.md)
-- [Contest Page](https://codehawks.cyfrin.io/c/2025-02-raac)
-
-
-### **Zaros Part 2 - January 2025**
-
-- **High severity finding:**
-
-  `getAutoDeleverageFactor` in `Market.sol` can return 1 even if it should never, while delaverage mode is triggered. This could lead to a failure in the deleveraging process, putting funds at risk.
-- **Medium severity finding:**
-
-  Assuming the proposed initial curve in `UsdTokenSwapConfig` for `getPremiumDiscountFactor` will get applied it will DoS the whole functions execution as soon as `vaultDebtUsdX18` has a negative value. This could halt key functionalities of the protocol.
-- [Compiled Findings](./Zaros/Zaros-Part-2.md)
-- [Contest Page](https://codehawks.cyfrin.io/c/2025-01-zaros-part-2/results)
-
-### **BENQI: Ignite - January 2025 - 4th place**
-
+### BENQI: Ignite — January 2025 (4th Place 🏅)
 - Private Audit Competition
 - [Contest Page](https://codehawks.cyfrin.io/c/2025-01-benqi/results)
 
-### **Alchemix - Transmuter - December 2024**
+### Alchemix Transmuter — December 2024
+- **Findings:** 1 Medium
+- [Compiled Findings](./alchemix_transmuter/alchemix_transmuter.md) | [Contest Page](https://codehawks.cyfrin.io/c/2024-12-alchemix/results)
 
-- Contribution of 1 Medium Severity Finding
-- [Compiled Findings](./Alchemix-Transmuter/Alchemix-Transmuter.md)
-- [Contest Page](https://codehawks.cyfrin.io/c/2024-12-alchemix/results)
+---
 
-## Tools & Methodologies
+## 🛠 Tools & Methodologies
 
-Common tools and approaches I use:
-- Manual Code Review
-- Symbolic Execution and Formal Verification (Certora, Halmos)
-- Stateless and Stateful Fuzzing (Foundry, Medusa)
+| Category | Tools |
+|----------|-------|
+| Manual Review | Deep code analysis, threat modeling |
+| Formal Verification | Certora, Halmos |
+| Fuzzing | Foundry, Medusa (stateless & stateful) |
 
-## Contact
+---
+
+## 📬 Contact
 
 For audit inquiries or security consultations:
-- Twitter: [@0xTimefliez](https://x.com/0xTimefliez)
-- Email: [crfabig@gmail.com](mailto:crfabig@gmail.com)
+
+| Platform | Contact |
+|----------|---------|
+| Twitter | [@0xTimefliez](https://x.com/0xTimefliez) |
+| Email | [crfabig@gmail.com](mailto:crfabig@gmail.com) |

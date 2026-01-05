@@ -1,34 +1,49 @@
-- ## High Risk Findings
-    - ### [H-01. StabilityPool reward distribution is frontrunnable](#H-01)
-    - ### [H-02. RAACNFT mint function receives funds to address(this) but has no way of withdrawing them](#H-02)
-    - ### [H-03. Any attempt to liquidate a user will fail, because StabilityPool does not hold crvUSD during operational lifecycle](#H-03)
-    - ### [H-04. LendingPool allows users to borrow more crvUSD than their NFT is worth](#H-04)
-    - ### [H-05. Mismatch of crvUSD approved versus transferred between StabilityPool and LendingPool prevents users from being liquidated](#H-05)
-    - ### [H-06. After Liquidating a user NFTs are transferred into the StabilityPool which though lacks functionality to withdraw them, effectively locking them in the contract](#H-06)
-    - ### [H-07. WithdrawNft in LendingPool has an logic error leaving the protocol with bad debt](#H-07)
-    - ### [H-08. RAAC Token fees on transfer do not use FeeCollector collectFee, therefore bypassing accounting logic](#H-08)
-- ## Medium Risk Findings
-    - ### [M-01. getNFTPrice in LendingPool has no checks in place to check for stale prices](#M-01)
-    - ### [M-02. RAACReleaseOrchastrator has emergencyRevoke transfer cleared tokens to self locking them in the contract.](#M-02)
-    - ### [M-03. Treasury.sol has misleading accounting, leading to uninformed government proposals](#M-03)
-    - ### [M-04. balanceOf(address(this)) in StabilityPool causes reward distribution to be higher than it should be](#M-04)
-    - ### [M-05. closeLiquidation within LendingPool does not allow partial repayments, which can cause massive losses to users within edge case](#M-05)
-    - ### [M-06. getBoostMultiplier in BoostController only returns either MIN_BOOST or MAX_BOOST, no dynamic value in between](#M-06)
-    - ### [M-07. RAACPrimeRateOracle integration lacks any checks on data integrity](#M-07)
-    - ### [M-08. Repayment of debt after the grace period expires leaves the protocol in inconsistent state, locking the NFT in the LendingPool ](#M-08)
-    - ### [M-09. An edge case within the pause can cause users to be unfairly liquidated](#M-09)
-    - ### [M-10. RToken does not accrue any interest, contradicting the Docs and Natspec](#M-10)
-    - ### [M-11. Protocol Insolvency due to inability to withdraw rewards from curve](#M-11)
-- ## Low Risk Findings
-    - ### [L-01. lastUpdateTimestamp in RAACHausePrices has no connection to a specific asset but is updated globally](#L-01)
+# RAAC Core - Findings Report
 
+## Table of Contents
+- High Risk Findings
+    - [H-01. StabilityPool reward distribution is frontrunnable](#H-01)
+    - [H-02. RAACNFT mint function receives funds to address(this) but has no way of withdrawing them](#H-02)
+    - [H-03. Any attempt to liquidate a user will fail, because StabilityPool does not hold crvUSD during operational lifecycle](#H-03)
+    - [H-04. LendingPool allows users to borrow more crvUSD than their NFT is worth](#H-04)
+    - [H-05. Mismatch of crvUSD approved versus transferred between StabilityPool and LendingPool prevents users from being liquidated](#H-05)
+    - [H-06. After Liquidating a user NFTs are transferred into the StabilityPool which though lacks functionality to withdraw them, effectively locking them in the contract](#H-06)
+    - [H-07. WithdrawNft in LendingPool has an logic error leaving the protocol with bad debt](#H-07)
+    - [H-08. RAAC Token fees on transfer do not use FeeCollector collectFee, therefore bypassing accounting logic](#H-08)
+- Medium Risk Findings
+    - [M-01. getNFTPrice in LendingPool has no checks in place to check for stale prices](#M-01)
+    - [M-02. RAACReleaseOrchastrator has emergencyRevoke transfer cleared tokens to self locking them in the contract.](#M-02)
+    - [M-03. Treasury.sol has misleading accounting, leading to uninformed government proposals](#M-03)
+    - [M-04. balanceOf(address(this)) in StabilityPool causes reward distribution to be higher than it should be](#M-04)
+    - [M-05. closeLiquidation within LendingPool does not allow partial repayments, which can cause massive losses to users within edge case](#M-05)
+    - [M-06. getBoostMultiplier in BoostController only returns either MIN_BOOST or MAX_BOOST, no dynamic value in between](#M-06)
+    - [M-07. RAACPrimeRateOracle integration lacks any checks on data integrity](#M-07)
+    - [M-08. Repayment of debt after the grace period expires leaves the protocol in inconsistent state, locking the NFT in the LendingPool ](#M-08)
+    - [M-09. An edge case within the pause can cause users to be unfairly liquidated](#M-09)
+    - [M-10. RToken does not accrue any interest, contradicting the Docs and Natspec](#M-10)
+    - [M-11. Protocol Insolvency due to inability to withdraw rewards from curve](#M-11)
+- Low Risk Findings
+    - [L-01. lastUpdateTimestamp in RAACHausePrices has no connection to a specific asset but is updated globally](#L-01)
 
+---
 
-### Number of findings:
-- High: 8
-- Medium: 11
-- Low: 1
+## Contest Summary
 
+**Sponsor:** RAAC
+
+**Dates:** TBD
+
+---
+
+## Results Summary
+
+| Severity | Count |
+|----------|-------|
+| High     | 8     |
+| Medium   | 11    |
+| Low      | 1     |
+
+---
 
 # High Risk Findings
 

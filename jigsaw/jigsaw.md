@@ -1,12 +1,44 @@
-# High 1 - Users can unfairly be liquidated
+# Jigsaw - Findings Report
 
-## Summary
+## Table of Contents
+- High Risk Findings
+    - [H-01. Users can unfairly be liquidated](#H-01)
+    - [H-02. Permissionless Liquidators can profitably liquidate bad debt positions](#H-02)
+    - [H-03. Partial Liquidation of liquidatable positions can worsen the position health](#H-03)
+- Low Risk Findings
+    - [L-01. Protocol will be stuck with Bad Debt](#L-01)
+
+---
+
+## Contest Summary
+
+**Sponsor:** Jigsaw
+
+**Dates:** TBD
+
+---
+
+## Results Summary
+
+| Severity | Count |
+|----------|-------|
+| High     | 3     |
+| Medium   | 0     |
+| Low      | 1     |
+
+---
+
+# High Risk Findings
+
+## <a id='H-01'></a>H-01. Users can unfairly be liquidated
+
+### Summary
 
 In the Jigsaw protocol users are encouraged to invest into strategies, while using their initial investment as collateral to borrow jUsd. However, failure to account for earnt yield within Jigsaws Strategies leads to unfair liquidations of actual solvent positions.
 
-## Finding Description
+### Finding Description
 
-Consider the following code in ```StablesManager``` and ```LiquidationManager```:
+Consider the following code in `StablesManager` and `LiquidationManager`:
 
 ```solidity
 function isLiquidatable(address _token, address _holding) public view override returns (bool) {
@@ -91,17 +123,17 @@ returns (uint256 collateralUsed)
 
 Inspecting the functions above, it is plain as day that neither one of them is implementing any query regarding the rewards.
 
-## Impact Explanation
+### Impact Explanation
 
 The impact is to be considered high, since the users will lost a big amount of his collateral and any deposits into these strategies will be withdrawn, so he will immediately stop earning future yield, until manual interaction.
 
-## Likelihood Explanation
+### Likelihood Explanation
 
 Likelihood is high as well, the user in the scenario is using the protocol as it is intended, deposits assets, invests and loans. The failure to check accrued yield before liquidation is a critical oversight.
 
-## Proof of Concept
+### Proof of Concept
 
-Copy and paste the following code into ```./test/PoC.t.sol``` and run ```forge test --mp PoC.t.sol```:
+Copy and paste the following code into `./test/PoC.t.sol` and run `forge test --mp PoC.t.sol`:
 
 ```solidity
 //SPDX-License-Identifier: MIT
@@ -196,36 +228,37 @@ function test_PoC_controllExample() public {
 }
 ```
 
-Executing above test will proof that the users is undergoing successful liquidation in ```test_PoC_unfairLiquidation```, even though he is not "insolvent" per se as seen in ```test_PoC_controllExample```.
+Executing above test will proof that the users is undergoing successful liquidation in `test_PoC_unfairLiquidation`, even though he is not "insolvent" per se as seen in `test_PoC_controllExample`.
 
-## Recommendation
+### Recommendation
 
 Implement logic which either queries or withdraws the rewards before actual liquidation to ensure a user is really insolvent/liquidatable.
 
+---
 
-# High 2 - Permissionless Liquidators can profitably liquidate bad debt positions
+## <a id='H-02'></a>H-02. Permissionless Liquidators can profitably liquidate bad debt positions
 
-## Summary
+### Summary
 
 If any position during rapid market movement would enter a literal bad debt position it is possible for external liquidators to partially liquidate a position, worsening the collateralization ratio and leaving the protocol with even worse bad debt.
 
-## Finding Description
+### Finding Description
 
-During the liquidation call the ```LiquidationManager``` fails to check, if the position has entered a state of bad debt, therefore a permissionless, external liquidator can partially and most importantly profitably liquidate a position before the admin can call ```liquidateBadDebt```. This scenario will significantly worsen the positions health factor and collateralization ratio, causing even more loss liquidating the remaining debt from the protocol side.
+During the liquidation call the `LiquidationManager` fails to check, if the position has entered a state of bad debt, therefore a permissionless, external liquidator can partially and most importantly profitably liquidate a position before the admin can call `liquidateBadDebt`. This scenario will significantly worsen the positions health factor and collateralization ratio, causing even more loss liquidating the remaining debt from the protocol side.
 
-## Impact Explanation
+### Impact Explanation
 
 Directly affecting the solvency of the protocol, syphoning value from bad debt positions is to be rated high.
 
-## Likelihood Explanation
+### Likelihood Explanation
 
 The only pre-conditions which have to be met are external. Internally the scenario exists that positions can enter bad debt state for several reasons. Therefore I rate the likelihood here high as well, since it is core functionality and it is expected that liquidators will act within there own interest.
 
-## Proof of Concept
+### Proof of Concept
 
-Create a file ```./test/PoC.t.sol``` copy and paste the following code into it and execute ```forge test --mt test_pocProfitablyLiquidatingBadDebt -vv```:
+Create a file `./test/PoC.t.sol` copy and paste the following code into it and execute `forge test --mt test_pocProfitablyLiquidatingBadDebt -vv`:
 
-```javascript
+```solidity
 //SPDX-License-Identifier: MIT
 
 pragma solidity ^0.8.26;
@@ -329,7 +362,7 @@ contract PoC is Test, BasicContractsFixture {
 
 Execution of this testcase should produce a log showcasing the following:
 
-```javascript
+```
 Ran 1 test for test/PoC.t.sol:PoC
 [PASS] test_pocProfitablyLiquidatingBadDebt() (gas: 557234)
 Logs:
@@ -352,7 +385,7 @@ Suite result: ok. 1 passed; 0 failed; 0 skipped; finished in 4.01ms (510.21µs C
 
 Highlighting that the user indeed executed a profitable liquidation on the position while his profits are basically on the cost of the protocol and it's emergency fund.
 
-## Recommendation
+### Recommendation
 
 Implement a check in the liquidation logic to prevent partial liquidations of positions in bad debt as such:
 
@@ -403,29 +436,31 @@ returns (uint256 collateralUsed)
 }
 ```
 
-# High 3 - Partial Liquidation of liquidatable positions can worsen the position health
+---
 
-## Summary
+## <a id='H-03'></a>H-03. Partial Liquidation of liquidatable positions can worsen the position health
+
+### Summary
 
 Liquidations in Lending Protocols are meant to protect the protocol against bad debt and partial liquidations are supposed to protect the protocol from not liquidatable large positions, however it is crucial that the health factor increases during a partial liquidation, not decreases or even creates bad debt.
 
-## Finding Description
+### Finding Description
 
 The Jigsaw protocol lacks critical checks or "bad debt socialisation" to validate that a partial liquidation actually increased the health factor, therefore it is possible for partial liquidations to actually decrease the health factor and even create bad debt in certain scenarios, as shown in the PoC below.
 
-## Impact Explanation
+### Impact Explanation
 
-High, a decrease in health factor due to a partial liquidation disincentivizes following liquidations and can as shown in the attached PoC even create bad debt
+High, a decrease in health factor due to a partial liquidation disincentivizes following liquidations and can as shown in the attached PoC even create bad debt.
 
-## Likelihood Explanation
+### Likelihood Explanation
 
-High, partial liquidations are a healthy part of the ecosystem, and expected to occur regularly, especially on large "whale positions"
+High, partial liquidations are a healthy part of the ecosystem, and expected to occur regularly, especially on large "whale positions".
 
-## Proof of Concept
+### Proof of Concept
 
-Create a file ```./test/PoC.t.sol``` copy and paste the following code into it and execute ```forge test --mt test_partialLiquidationWorsensHealthFactor -vvvvv```:
+Create a file `./test/PoC.t.sol` copy and paste the following code into it and execute `forge test --mt test_partialLiquidationWorsensHealthFactor -vvvvv`:
 
-```javascript
+```solidity
 //SPDX-License-Identifier: MIT
 
 pragma solidity ^0.8.26;
@@ -505,7 +540,7 @@ contract PoC is Test, BasicContractsFixture {
 
 Execution of this testcase should produce a log showcasing the following:
 
-```javascript
+```
 @>  [0] VM::assertLt(879999999999999999 [8.799e17], 1060000000000000000 [1.06e18]) [staticcall]
     │   └─ ← [Return]
     ├─ [0] VM::stopPrank()
@@ -519,21 +554,26 @@ Suite result: ok. 1 passed; 0 failed; 0 skipped; finished in 11.93ms (8.46ms CPU
 ```
 
 As you can see above the collateralization ratio before the partial liquidation was above 1e18 which basically means it was recoverable without incurring loss, however, after this partial liquidation the ratio dropped below 1e18 which means, external liquidators have no benefit of liquidating such position, leaving the protocol with bad debt.
-## Recommendation
+
+### Recommendation
 
 Implement a check that liquidations definitively not make the collateralization ratio worse and increase the ratio in which a debt is considered bad by the percentage of liquidator bonus, since the issue is most severe within these percentiles.
 
-# Low 1 - Protocol will be stuck with Bad Debt
+---
 
-## Summary
+# Low Risk Findings
 
-In the unlikely event in which a Token Price would reach a literal 0, the protocol is unable to cover the position since ```SharesRegistry::getExchangeRate``` would revert with 2100, even when called during ```LiquidationManager::liquidateBadDebt```.
+## <a id='L-01'></a>L-01. Protocol will be stuck with Bad Debt
 
-## Finding Description
+### Summary
 
-Consider the following code within ```SharesRegistry```:
+In the unlikely event in which a Token Price would reach a literal 0, the protocol is unable to cover the position since `SharesRegistry::getExchangeRate` would revert with 2100, even when called during `LiquidationManager::liquidateBadDebt`.
 
-```javascript
+### Finding Description
+
+Consider the following code within `SharesRegistry`:
+
+```solidity
 function getExchangeRate() external view override returns (uint256) {
 	(bool updated, uint256 rate) = oracle.peek(oracleData);
 	require(updated, "3037");
@@ -544,21 +584,21 @@ function getExchangeRate() external view override returns (uint256) {
 
 While this line is a protection mechanism against "division by 0" errors and potential oracle failures, it also causes vital functions to revert, crucially, during times these functions have to be executable.
 
-## Impact Explanation
+### Impact Explanation
 
-The impact is High since any failure to liquidate bad debt directly causes protocol insolvency, jUsd will de-peg , and in the event a collateral token price is going to 0, the protocol would be stuck with the position.
+The impact is High since any failure to liquidate bad debt directly causes protocol insolvency, jUsd will de-peg, and in the event a collateral token price is going to 0, the protocol would be stuck with the position.
 
-## Likelihood Explanation
+### Likelihood Explanation
 
 Regarding the likelihood I think it is vital to differentiate between internal logic and outside influences. Should a token price go to 0 for any reason the likelihood of this occurring is "always".
 However, I would agree to a low likelihood after all, since this scenario would require a virtual black swan event, e.g. Circle going bankrupt, wBTC massively de-pegging etc.
-It is however vital to realize that the protocol should not rely to heavily on assumptions outside it's influence, therefore the likelihood is not negligible.
+It is however vital to realize that the protocol should not rely too heavily on assumptions outside it's influence, therefore the likelihood is not negligible.
 
-## Proof of Concept
+### Proof of Concept
 
-Create a file ```./src/test/PoC.t.sol``` copy and paste the attached code into it and run ```forge test --mt test_pocBadDebtStuckInProtocol```. Since we are expecting the revert, the test is supposed to succeed.
+Create a file `./src/test/PoC.t.sol` copy and paste the attached code into it and run `forge test --mt test_pocBadDebtStuckInProtocol`. Since we are expecting the revert, the test is supposed to succeed.
 
-```javascript
+```solidity
 //SPDX-License-Identifier: MIT
 
 pragma solidity ^0.8.26;
@@ -612,6 +652,6 @@ contract PoC is Test, BasicContractsFixture {
 }
 ```
 
-## Recommendation
+### Recommendation
 
-Remove the ```require(price > 0)``` statement in get exchange rate and reimplement it into the functions which rely on the price being  >0 solely, basically doing a more conscious decision about this restriction.
+Remove the `require(price > 0)` statement in get exchange rate and reimplement it into the functions which rely on the price being >0 solely, basically doing a more conscious decision about this restriction.

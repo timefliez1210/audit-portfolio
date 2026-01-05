@@ -1,13 +1,43 @@
-# Non Inclusion of actual target tick in calculated tick range causes spread on limit orders
+# Gamma Limit Orders - Findings Report
 
-## Summary  
+## Table of Contents
+- Informational Finding
+    - [I-01. Non Inclusion of actual target tick in calculated tick range causes spread on limit orders](#I-01)
 
-During the calculation of the ```bottomTick``` and ```topTick``` in ```LimitOrderManager::createLimitOrder``` the actual ```targetTick``` is not included inside the range of ```[bottomTick; topTick]``` causing "spread" during the execution of such orders.
-  
-## Finding Description  
+---
 
-```TickLibrary::getValidTickRange```:
-```javascript
+## Contest Summary
+
+**Sponsor:** Gamma
+
+**Dates:** TBD
+
+---
+
+## Results Summary
+
+| Severity      | Count |
+|---------------|-------|
+| High          | 0     |
+| Medium        | 0     |
+| Low           | 0     |
+| Informational | 1     |
+
+---
+
+# Informational Findings
+
+## <a id='I-01'></a>I-01. Non Inclusion of actual target tick in calculated tick range causes spread on limit orders
+
+### Summary
+
+During the calculation of the `bottomTick` and `topTick` in `LimitOrderManager::createLimitOrder` the actual `targetTick` is not included inside the range of `[bottomTick; topTick]` causing "spread" during the execution of such orders.
+
+### Finding Description
+
+`TickLibrary::getValidTickRange`:
+
+```solidity
 function getValidTickRange(
 	int24 currentTick,
 	int24 targetTick,
@@ -36,9 +66,9 @@ function getValidTickRange(
 }
 ```
 
-```TickLibrary::getRoundedTargetTick```:
+`TickLibrary::getRoundedTargetTick`:
 
-```javascript
+```solidity
 function getRoundedTargetTick(
 	int24 targetTick,
 	bool isToken0,
@@ -56,9 +86,9 @@ function getRoundedTargetTick(
 }
 ```
 
-As you can see under 3. in the provided code above, we calculate the rounded target tick by dividing the ```targetTick``` with the ```tickSpacing``` which will produce the lower end of the tick boundary of the target tick.
+As you can see under 3. in the provided code above, we calculate the rounded target tick by dividing the `targetTick` with the `tickSpacing` which will produce the lower end of the tick boundary of the target tick.
 
-However, considering now 1. and 2. in provided code above, this result is treated as the upper bound of the valid tick range, effectively excluding the user selected ```targetTick``` from the tick range the order will be executed in.
+However, considering now 1. and 2. in provided code above, this result is treated as the upper bound of the valid tick range, effectively excluding the user selected `targetTick` from the tick range the order will be executed in.
 
 ###### Consider the following scenario (provided in the PoC below):
 
@@ -74,26 +104,26 @@ Following above quoted codes math:
 29 * 60   = 1740 <= rounded target tick 
 ```
 
-Now in 1. and 2. in above code we will now deduct the tick spacing to calculate the valid range, reulsting in a tick range of ```[1680;1740]``` excluding the users target price and target tick.
+Now in 1. and 2. in above code we will now deduct the tick spacing to calculate the valid range, resulting in a tick range of `[1680;1740]` excluding the users target price and target tick.
 
 The Result is that the user will receive less amounts of token1 than expected and set in the limit order.
 
-## Impact Explanation  
+### Impact Explanation
 
-The spread showcased in the PoC below might not seem like a lot, however, since we are talking about a Limit Order system, not an AMM, it can not be neglected. Users of limit orders actually do so to avoid the spreads of market buy/sell orders, therefore it is crucial that orders will actually by executed on the ```topTick``` within the range, which does include the selected ```targetTick```.
+The spread showcased in the PoC below might not seem like a lot, however, since we are talking about a Limit Order system, not an AMM, it can not be neglected. Users of limit orders actually do so to avoid the spreads of market buy/sell orders, therefore it is crucial that orders will actually by executed on the `topTick` within the range, which does include the selected `targetTick`.
 
 A Medium Impact seems justified considering a relatively low spread.
-  
-## Likelihood Explanation  
 
-The likelihood is High, since no preconditions need to be met and this issue occurs every time a limit order is created as long as ```targetTick % tickSpacing != 0```.
-  
-## Proof of Concept  
+### Likelihood Explanation
 
-Please copy the following code into a file ```PoC.t.sol``` within the ```./test``` directory and execute:
-```forge test --mt test_targetTickNotIncludedInRange -vv```:
+The likelihood is High, since no preconditions need to be met and this issue occurs every time a limit order is created as long as `targetTick % tickSpacing != 0`.
 
-```javascript
+### Proof of Concept
+
+Please copy the following code into a file `PoC.t.sol` within the `./test` directory and execute:
+`forge test --mt test_targetTickNotIncludedInRange -vv`:
+
+```solidity
 //SPDX-License-Identifier: MIT  
 
 pragma solidity ^0.8.24;
@@ -225,7 +255,7 @@ contract PoC is Test, Deployers {
 
 Executing above code will produce the following log:
 
-```javascript
+```
 Ran 1 test for test/PoC.t.sol:PoC
 [PASS] test_targetTickNotIncludedInRange() (gas: 830839)
 Logs:
@@ -246,15 +276,15 @@ Suite result: ok. 1 passed; 0 failed; 0 skipped; finished in 3.47ms (862.21µs C
 Ran 1 test suite in 93.81ms (3.47ms CPU time): 1 tests passed, 0 failed, 0 skipped (1 total tests)
 ```
 
-Showcasing that indeed in this scenario a >1% spread (even after fee deduction) occured.
+Showcasing that indeed in this scenario a >1% spread (even after fee deduction) occurred.
 
-## Recommendation  
+### Recommendation
 
 The issue could potentially be fixed in 2 places
-a) ```TickLibrary::getValidTickRange```
-b) ```TickLibrary::getRoundedTargetTick```
+a) `TickLibrary::getValidTickRange`
+b) `TickLibrary::getRoundedTargetTick`
 
-However, fixing it within ```getRoundedTargetTick``` could have implications on other parts within the protocol, therefore I will focus on ```getValidTickRange```:
+However, fixing it within `getRoundedTargetTick` could have implications on other parts within the protocol, therefore I will focus on `getValidTickRange`:
 
 ```diff
 function getValidTickRange(

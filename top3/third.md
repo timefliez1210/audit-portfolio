@@ -1,13 +1,19 @@
-## Description
+# Medium - getPremiumDiscountFactor DoS when vaultDebtUsdX18 is negative
+
+## Summary
+
+In `UsdTokenSwapConfig::getPremiumDiscountFactor` the proposed initial curve will cause a DoS when `vaultDebtUsdX18` has a negative value.
+
+## Finding Description
 
 In `UsdTokenSwapConfig::getPremiumDiscountFactor` the proposed initial curve for
 `f(x) = y_min + Δy * ((x - x_min) / (x_max - x_min))^z | x ∈ [x_min, x_max]`
 as mentioned is:
 `f(x) = 1 + 9 * ((x - 0.3) / 0.5)^3`. The arising issue of this proposition is that at any point if y\_min >= 1 the function will automatically revert, if `vaultDebtUsdX18 < 0`, since
 
-```javascript
+```solidity
 premiumDiscountFactorX18 =
-            vaultDebtUsdX18.lt(SD59x18_ZERO) ? UD60x18_UNIT.sub(pdCurveYX18) : UD60x18_UNIT.add(pdCurveYX18);
+            vaultDebtUsdX18.lt(SD59x18_ZERO) ? UD60x18_UNIT.sub(pdCurveYX18) : UD60x18_UNIT.add(pdCurveYX18);
 ```
 
 will try to assign a negative value to `UD60x18 result` in `Helpers.sol` which is logically defined as `UD60x18`.
@@ -37,7 +43,7 @@ which would in conclusion result in a discount factor of
 In the proposed standard configuration explicitly, but more generally in the whole function, any value of y\_min >= 1 will cause reverts by default if `vaultDebtUsdX18` is negative. Even with
 y\_min < 1, it would still depend on y\_max or delta\_y and the result within the brackets.
 
-## Impact
+## Impact Explanation
 
 In the current version and with proposed base configuration the protocol basically DoS'es itself at any point `vaultDebtUsdX18` is negative. Therefore this function prevents the execution of `StabilityBranch::fulfillSwap` and `StabilityBranch::initiateSwap` locking user funds in the protocol until `vaultDebtUsdX18` is positive and those functions become executable.
 
@@ -47,7 +53,7 @@ Since the issues arising are temporary I rate this as Medium.
 
 Manual Review
 
-## Recommended Mitigation
+## Recommendation
 
 Depending on the fact how this curve and functionality is intended, it would be a solution to use the absolute of the value, like in previous code with a different .sub() method, or simply by executing the subtraction conditional since `| x - y | = | y - x |`.
 
@@ -59,25 +65,25 @@ The third, and best mitigation, would be to clamp the result of f(x) so `pdCurve
 
 ```diff
 function getPremiumDiscountFactor(
-        Data storage self,
-        UD60x18 vaultAssetsValueUsdX18,
-        SD59x18 vaultDebtUsdX18
-    )
-        internal
-        view
-        returns (UD60x18 premiumDiscountFactorX18)
+        Data storage self,
+        UD60x18 vaultAssetsValueUsdX18,
+        SD59x18 vaultDebtUsdX18
+    )
+        internal
+        view
+        returns (UD60x18 premiumDiscountFactorX18)
 {
 ....
 /// snip ///
 UD60x18 pdCurveYX18 = pdCurveYMinX18.add(
-            pdCurveYMaxX18.sub(pdCurveYMinX18).mul(        pdCurveXX18.sub(pdCurveXMinX18).div(pdCurveXMaxX18.sub(pdCurveXMinX18)).pow(pdCurveZX18)
-            )
- );
+            pdCurveYMaxX18.sub(pdCurveYMinX18).mul(        pdCurveXX18.sub(pdCurveXMinX18).div(pdCurveXMaxX18.sub(pdCurveXMinX18)).pow(pdCurveZX18)
+            )
+ );
 +if(vaultDebtUsdX18.lt(SD59x18_ZERO) && pdCurveYX18.gt(UD60x18_UNIT)) {
-+            premiumDiscountFactorX18 = UD60x18_UNIT; //*add here the value*
-+            return premiumDiscountFactorX18;
++            premiumDiscountFactorX18 = UD60x18_UNIT; //*add here the value*
++            return premiumDiscountFactorX18;
 +}
 premiumDiscountFactorX18 =
-            vaultDebtUsdX18.lt(SD59x18_ZERO) ? UD60x18_UNIT.sub(pdCurveYX18) : UD60x18_UNIT.add(pdCurveYX18);
-    }
+            vaultDebtUsdX18.lt(SD59x18_ZERO) ? UD60x18_UNIT.sub(pdCurveYX18) : UD60x18_UNIT.add(pdCurveYX18);
+    }
 ```

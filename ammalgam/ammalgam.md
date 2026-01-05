@@ -1,64 +1,94 @@
-# High 1 - Naturally occurring DoS of _repay() due to rounding in calcTrancheAtStartOfLiquidation()
+# Ammalgam - Findings Report
 
-## Summary
+## Table of Contents
+- High Risk Findings
+    - [H-01. Naturally occurring DoS of _repay() due to rounding in calcTrancheAtStartOfLiquidation()](#H-01)
+- Informational Findings
+    - [I-01. Repayment of debt blocked incl. liquidations](#I-01)
 
-```calcTranchAtStartOfLiquidation``` can produce ```inputQ64 = 0``` during repayments due to a rounding issue, preventing users to repay their debt, or being liquidated, if ```netDebtXorYAssets``` becomes way smaller than ```activeLiquidityAssets```. This will happen during rapid market movements (consecutive buy or sell periods), or can happen when the pool constellation drastically changes.
+---
 
-## Finding Description
+## Contest Summary
 
-Consider the following function in ```./library/Saturation.sol```:
+**Sponsor:** Ammalgam
+
+**Dates:** TBD
+
+---
+
+## Results Summary
+
+| Severity      | Count |
+|---------------|-------|
+| High          | 1     |
+| Medium        | 0     |
+| Low           | 0     |
+| Informational | 1     |
+
+---
+
+# High Risk Findings
+
+## <a id='H-01'></a>H-01. Naturally occurring DoS of _repay() due to rounding in calcTrancheAtStartOfLiquidation()
+
+### Summary
+
+`calcTranchAtStartOfLiquidation` can produce `inputQ64 = 0` during repayments due to a rounding issue, preventing users to repay their debt, or being liquidated, if `netDebtXorYAssets` becomes way smaller than `activeLiquidityAssets`. This will happen during rapid market movements (consecutive buy or sell periods), or can happen when the pool constellation drastically changes.
+
+### Finding Description
+
+Consider the following function in `./library/Saturation.sol`:
 
 ```solidity
-    function calcTrancheAtStartOfLiquidation(
-        uint256 netDebtXorYAssets,
-        uint256 activeLiquidityAssets,
-        uint256 trancheSpanInTicks,
-        uint256 desiredThresholdMag2,
-        bool netDebtX
-    ) internal pure returns (int256 trancheStartOfLiquidationMag2) {
-        int16 direction;
-        uint256 inputQ64;
+function calcTrancheAtStartOfLiquidation(
+    uint256 netDebtXorYAssets,
+    uint256 activeLiquidityAssets,
+    uint256 trancheSpanInTicks,
+    uint256 desiredThresholdMag2,
+    bool netDebtX
+) internal pure returns (int256 trancheStartOfLiquidationMag2) {
+    int16 direction;
+    uint256 inputQ64;
 
-        ///// ***** SNIP ***** /////
+    ///// ***** SNIP ***** /////
 
-            unchecked {
-                inputQ64 =
-                    // top is uint128 * MAG2 * Q6.72 which fits in 211, we add 32 before dividing, then
-                    // add another 32 to make it a Q64 number. bottom is same. round down.
-@>                  Convert.mulDiv(
-@>                      netDebtXorYAssets * SATURATION_TIME_BUFFER_IN_MAG2,
-@>                      baseToPowerOfCount * Q32,
-@>                      (baseToPowerOfCount - Q72) *
-@>                          activeLiquidityAssets *
-@>                          desiredThresholdMag2,
-@>                      false
-                    ) *
-                    Q32;
-            }
-
-            direction = int16(netDebtX ? INT_ONE : INT_NEGATIVE_ONE);
+        unchecked {
+            inputQ64 =
+                // top is uint128 * MAG2 * Q6.72 which fits in 211, we add 32 before dividing, then
+                // add another 32 to make it a Q64 number. bottom is same. round down.
+@>              Convert.mulDiv(
+@>                  netDebtXorYAssets * SATURATION_TIME_BUFFER_IN_MAG2,
+@>                  baseToPowerOfCount * Q32,
+@>                  (baseToPowerOfCount - Q72) *
+@>                      activeLiquidityAssets *
+@>                      desiredThresholdMag2,
+@>                  false
+                ) *
+                Q32;
         }
 
-@>      int256 tick = TickMath.getTickAtPrice(inputQ64 ** 2);
+        direction = int16(netDebtX ? INT_ONE : INT_NEGATIVE_ONE);
+    }
+
+@>  int256 tick = TickMath.getTickAtPrice(inputQ64 ** 2);
 
 
-		///// ***** SNIP ***** /////
+	///// ***** SNIP ***** /////
 ```
 
-During the call of ```_repay()``` within ```AmmalgamPair.sol``` the call chain will pass  ```calcTrancheAtStartOfLiquidation``` as seen above. The described issue here arises for small remaining balances of ```netDebtXorYAsset``` which would result in ```inputQ64``` being assigned to 0, which will than be passed into ```TickMath.getTickAtPrice()```, however this call will than ultimately revert with ```PriceOutOfBounds()```, DoSing the operation of the ```
-_repay()``` function within ```AmmalgamPair.sol```, which is being called when a user wants to repay his positions, or during liquidation. Either, locking the user collateral (if he would like to repay and sell it) or make him unliquidatable, which evidently than causes bad debt.
+During the call of `_repay()` within `AmmalgamPair.sol` the call chain will pass `calcTrancheAtStartOfLiquidation` as seen above. The described issue here arises for small remaining balances of `netDebtXorYAsset` which would result in `inputQ64` being assigned to 0, which will then be passed into `TickMath.getTickAtPrice()`, however this call will then ultimately revert with `PriceOutOfBounds()`, DoSing the operation of the `_repay()` function within `AmmalgamPair.sol`, which is being called when a user wants to repay his positions, or during liquidation. Either, locking the user collateral (if he would like to repay and sell it) or make him unliquidatable, which evidently then causes bad debt.
 
-## Impact Explanation
+### Impact Explanation
 
-DoS of the ```AmmalgamPair._repay()``` function can prevent users from repaying their debt, making them lose their collateral, it can freeze the collateral due to inability to repay, and affect liquidations also dependent on the ```_repay()``` logic. A high impact seems accurate.
+DoS of the `AmmalgamPair._repay()` function can prevent users from repaying their debt, making them lose their collateral, it can freeze the collateral due to inability to repay, and affect liquidations also dependent on the `_repay()` logic. A high impact seems accurate.
 
-## Likelihood Explanation
+### Likelihood Explanation
 
 The pair configuration, seen in the PoC below, is nothing special and is basically using the protocol as it is intended. Therefore no pre-conditions, and not even malicious intend, is met. Likelihood is therefore High.
 
-## Proof of Concept
+### Proof of Concept
 
-Copy and paste the following Code into a new file ```./test/PoC.t.sol``` and execute ```forge test --mt test_PoC_roundingWithinSaturationPreventsRepay```, ```forge test --mt test_PoC_roundingPreventsRepaySelloffExtendedEdition``` or/and ```forge test --mt test_PoC_roundingWithinSaturationPreventsRepayTradingRefreshLimitedFeeWasteEdition```:
+Copy and paste the following Code into a new file `./test/PoC.t.sol` and execute `forge test --mt test_PoC_roundingWithinSaturationPreventsRepay`, `forge test --mt test_PoC_roundingPreventsRepaySelloffExtendedEdition` or/and `forge test --mt test_PoC_roundingWithinSaturationPreventsRepayTradingRefreshLimitedFeeWasteEdition`:
 
 ```solidity
 // SPDX-License-Identifier: UNLICENSED
@@ -208,7 +238,6 @@ contract PoC is Test {
         vm.stopPrank();
     }
 }
-
 ```
 
 Running above tests will produce the following logs:
@@ -265,28 +294,27 @@ Encountered a total of 1 failing tests, 0 tests succeeded
 
 Showcasing that expected reverts (even on an extended period, during a selloff period) is indeed happening.
 
-## Recommendation
+### Recommendation
 
-A possible solution for the rounding issue would be to simply pass in ```true``` however I did not investigate other implications:
+A possible solution for the rounding issue would be to simply pass in `true` however I did not investigate other implications:
 
 ```diff
 unchecked {
-                inputQ64 =
-                    Convert.mulDiv(
-                        netDebtXorYAssets * SATURATION_TIME_BUFFER_IN_MAG2,
-                        baseToPowerOfCount * Q32,
-                        (baseToPowerOfCount - Q72) *
-                            activeLiquidityAssets *
-                            desiredThresholdMag2,
--                           false
-+                           true
-                    ) *
-                    Q32;
-            }
+            inputQ64 =
+                Convert.mulDiv(
+                    netDebtXorYAssets * SATURATION_TIME_BUFFER_IN_MAG2,
+                    baseToPowerOfCount * Q32,
+                    (baseToPowerOfCount - Q72) *
+                        activeLiquidityAssets *
+                        desiredThresholdMag2,
+-                       false
++                       true
+                ) *
+                Q32;
+        }
 ```
 
-
-## Additional PoC for Liquidation
+### Additional PoC for Liquidation
 
 ```solidity
 // SPDX-License-Identifier: UNLICENSED
@@ -423,22 +451,25 @@ contract PoC is Test {
         vm.stopPrank();
     }
 }
-
 ```
 
-## Informational 1 - Repayment of debt blocked incl. liquidations
+---
 
-## Summary
+# Informational Findings
 
-The repayment of assets can fail due to outdated state within ```_repay()``` DoSing core functionality,  accidentally or intentionally griefing legitimate repayments and/or preventing liquidations.
+## <a id='I-01'></a>I-01. Repayment of debt blocked incl. liquidations
 
-## Finding Description
+### Summary
 
-During execution of the ```_repay()``` function, used during ```repay()``` and ```liquidate()``` "extra funds" directly send to the contract (PoC 2 below), or accidentally left within after a swap, or similar (PoC 1 below), will not be accounted for during ```getNetBalances```, since ```_reserveXAssets``` and ```_reserveYAssets``` have not been accurately updated with potential donations, resulting in a ```ERC20InsufficientBalance()``` revert when ```burnId()``` is called. A malicious actor could DoS liquidations and repays for as little as ```1 wei```.
+The repayment of assets can fail due to outdated state within `_repay()` DoSing core functionality, accidentally or intentionally griefing legitimate repayments and/or preventing liquidations.
+
+### Finding Description
+
+During execution of the `_repay()` function, used during `repay()` and `liquidate()` "extra funds" directly send to the contract (PoC 2 below), or accidentally left within after a swap, or similar (PoC 1 below), will not be accounted for during `getNetBalances`, since `_reserveXAssets` and `_reserveYAssets` have not been accurately updated with potential donations, resulting in a `ERC20InsufficientBalance()` revert when `burnId()` is called. A malicious actor could DoS liquidations and repays for as little as `1 wei`.
 
 #### Execution Flow
 
-Consider the following code within ```AmmalgamPair.sol```:
+Consider the following code within `AmmalgamPair.sol`:
 
 ```solidity
 function _repay(
@@ -456,7 +487,7 @@ function _repay(
         (uint256 _missingXAssets, uint256 _missingYAssets) = missingAssets();
 ```
 
-The call to ```accrueSaturationPenaltiesAndInterest``` is supposed to update the reserves and figure out the actual amount which has been repaid. However, looking now into ```getNetBalances``` downstream the call, we can see that ```getNetBalances``` uses manipulable ```balanceOf()``` accounting:
+The call to `accrueSaturationPenaltiesAndInterest` is supposed to update the reserves and figure out the actual amount which has been repaid. However, looking now into `getNetBalances` downstream the call, we can see that `getNetBalances` uses manipulable `balanceOf()` accounting:
 
 ```solidity
 function getNetBalances(
@@ -472,7 +503,7 @@ function getNetBalances(
     }
 ```
 
-The issue arising with this is that later in the call chain within the ```repayHelper``` function these potentially wrong values will be used to calculate the amount of shares to burn here:
+The issue arising with this is that later in the call chain within the `repayHelper` function these potentially wrong values will be used to calculate the amount of shares to burn here:
 
 ```solidity
 uint256 repayInShares = Convert.toShares(
@@ -483,21 +514,21 @@ uint256 repayInShares = Convert.toShares(
         );
 ```
 
-The now calculated amount of ```repayInShares``` will than be passed into ```burnId``` causing a revert ```ERC20InsufficientBalance``` as soon as intentionally (by donating to the pool) or by accident any unaccounted balances remain. The probably most severe impact is that a malicious user could avoid/DoS complete liquidation of his position by simply donating 1 wei to the pool (as shown in the 2nd PoC). However, as PoC 1 shows, this can even happen by accident, when let's say a user swaps just a tiny amount more In that what he would get out.
+The now calculated amount of `repayInShares` will then be passed into `burnId` causing a revert `ERC20InsufficientBalance` as soon as intentionally (by donating to the pool) or by accident any unaccounted balances remain. The probably most severe impact is that a malicious user could avoid/DoS complete liquidation of his position by simply donating 1 wei to the pool (as shown in the 2nd PoC). However, as PoC 1 shows, this can even happen by accident, when let's say a user swaps just a tiny amount more In that what he would get out.
 
-## Impact Explanation
+### Impact Explanation
 
-While this issue would be resolved by calling sync() on the pool, the fact, however remains, that it can be happen by accident or intent DoSing core functionality using  ```_repay()``` including ```repay()``` and ```liquidate()``` should definitively justify a High Impact.
+While this issue would be resolved by calling sync() on the pool, the fact, however remains, that it can happen by accident or intent DoSing core functionality using `_repay()` including `repay()` and `liquidate()` should definitively justify a High Impact.
 
-## Likelihood Explanation
+### Likelihood Explanation
 
-It's an unhandled error which can even happen during normal operations, and depleted asset scenarios are to be expected. Likelihood is High
+It's an unhandled error which can even happen during normal operations, and depleted asset scenarios are to be expected. Likelihood is High.
 
-## Proof of Concept
+### Proof of Concept
 
 #### Repayment Grief - Accidental setup
 
-Copy and Paste the following code into a new file ```./test/PoC.t.sol``` and run ```forge test --mt test_PoC_repaymentFailsDueToInsufficientDebtTokenBalance```:
+Copy and Paste the following code into a new file `./test/PoC.t.sol` and run `forge test --mt test_PoC_repaymentFailsDueToInsufficientDebtTokenBalance`:
 
 ```solidity
 // SPDX-License-Identifier: UNLICENSED
@@ -615,10 +646,9 @@ Encountered a total of 1 failing tests, 0 tests succeeded
 
 showcasing clearly the revert reason, the contract thinks the user should have a higher balance of debt tokens, than he/she actually has.
 
-
 #### Liquidation DoS - Intentional donation
 
-Within ```./test/LiquidationTests.sol``` replace the ```testLiquidateHardBadDebtYAgainstLAndX``` with (or alternatively just paste the highlighted transfer line in):
+Within `./test/LiquidationTests.sol` replace the `testLiquidateHardBadDebtYAgainstLAndX` with (or alternatively just paste the highlighted transfer line in):
 
 ```diff
 function testLiquidateHardBadDebtYAgainstLAndX() public {
@@ -668,46 +698,7 @@ function testLiquidateHardBadDebtYAgainstLAndX() public {
         vm.stopPrank();
 
         // asserts
-
-        Validation.InputParams memory liquidatorAfter = getInputParams(
-            liquidator
-        );
-
-        assertEq(
-            liquidatorAfter.userAssets[DEPOSIT_L],
-            borrowerUnderWater.userAssets[DEPOSIT_L],
-            "liquidator should have the borrowers DEPOSIT_L"
-        );
-        assertEq(
-            liquidatorAfter.userAssets[DEPOSIT_X],
-            borrowerUnderWater.userAssets[DEPOSIT_X],
-            "liquidator should have the borrowers DEPOSIT_X"
-        );
-
-        (, uint256 reserveYAfterInYAssets, ) = pair.getReserves();
-
-        uint256 totalBurnedAssets = borrowerUnderWater.userAssets[BORROW_Y] -
-            repayBorrowedY;
-
-        uint256 expectedBurnedReserves = (totalBurnedAssets *
-            reserveYInYAssets) / (reserveYInYAssets + totalAssets[DEPOSIT_Y]);
-
-        assertEq(
-            reserveYInYAssets - reserveYAfterInYAssets,
-            expectedBurnedReserves,
-            "Reserves burnt should equal the bad debt scaled by reserves and deposit"
-        );
-
-        uint128[6] memory totalAssetsAfterLiquidation = pair.totalAssets();
-
-        assertEq(
-            totalAssets[DEPOSIT_Y] - totalAssetsAfterLiquidation[DEPOSIT_Y],
-            totalBurnedAssets - expectedBurnedReserves,
-            "Total assets DEPOSIT_Y should be reduced by the bad debt scaled by reserves and deposit"
-        );
-
-        // assert borrower's position is gone
-        verifyBorrowerEmptyPosition();
+        ...
     }
 ```
 
@@ -724,9 +715,10 @@ Suite result: FAILED. 0 passed; 1 failed; 0 skipped; finished in 117.49ms (4.54m
 ```
 
 Clearly showcasing the liquidation DoS.
-## Recommendation
 
-Limit the amount passed into ```burnId``` by fetching the users actual balance of debt tokens and if any calculated debt would exceed said balance, use the maximum possible:
+### Recommendation
+
+Limit the amount passed into `burnId` by fetching the users actual balance of debt tokens and if any calculated debt would exceed said balance, use the maximum possible:
 
 ```diff
 		///// ***** SNIP ***** /////

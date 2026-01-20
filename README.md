@@ -33,9 +33,9 @@ This repo provides a quick overview of my journey as a security researcher in th
 
 | Metric | Count |
 |--------|-------|
-| Total Audits Participated | 10 |
-| High Severity Findings | 15 |
-| Medium Severity Findings | 17 |
+| Total Audits Participated | 12 |
+| High Severity Findings | 26 |
+| Medium Severity Findings | 19 |
 | Low Severity Findings | 2 |
 | Informational Findings | 3 |
 
@@ -48,6 +48,10 @@ Contests listed in chronological order (newest first):
 ### Alignerz Pre-Launch Bug Bounty Competition — January 2026 (1st Place 🏅)
 - **Findings:** 2 Medium
 - [Compiled Findings](./alignerz-pre-launch/alignerz-pre-launch.md) | [Contest Page](https://github.com/dualguard/2026-01-pre-launch-bug-bounty-alignerz)
+
+### Alignerz Audit Contest — November 2025
+- **Findings:** 11 High, 2 Medium
+- [Compiled Findings](./alignerz-audit-comp/alignerz-audit-comp.md) | [Contest Page](https://cantina.xyz/competitions/alignerz-audit-contest)
 
 ### Kuru CLOB — August 2025
 - **Findings:** 1 High, 1 Medium

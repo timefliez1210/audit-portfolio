@@ -34,8 +34,8 @@ This repo provides a quick overview of my journey as a security researcher in th
 | Metric | Count |
 |--------|-------|
 | Total Audits Participated | 12 |
-| High Severity Findings | 26 |
-| Medium Severity Findings | 19 |
+| High Severity Findings | 25 |
+| Medium Severity Findings | 20 |
 | Low Severity Findings | 2 |
 | Informational Findings | 3 |
 

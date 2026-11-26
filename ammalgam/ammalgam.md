@@ -1,8 +1,8 @@
 # Ammalgam - Findings Report
 
 ## Table of Contents
-- High Risk Findings
-    - [H-01. Naturally occurring DoS of _repay() due to rounding in calcTrancheAtStartOfLiquidation()](#H-01)
+- Medium Risk Findings
+    - [M-01. Naturally occurring DoS of _repay() due to rounding in calcTrancheAtStartOfLiquidation()](#M-01)
 - Informational Findings
     - [I-01. Repayment of debt blocked incl. liquidations](#I-01)
 
@@ -12,7 +12,7 @@
 
 **Sponsor:** Ammalgam
 
-**Dates:** TBD
+**Dates:** July 2025
 
 ---
 
@@ -20,16 +20,18 @@
 
 | Severity      | Count |
 |---------------|-------|
-| High          | 1     |
-| Medium        | 0     |
+| High          | 0     |
+| Medium        | 1     |
 | Low           | 0     |
 | Informational | 1     |
 
 ---
 
-# High Risk Findings
+# Medium Risk Findings
 
-## <a id='H-01'></a>H-01. Naturally occurring DoS of _repay() due to rounding in calcTrancheAtStartOfLiquidation()
+## <a id='M-01'></a>M-01. Naturally occurring DoS of _repay() due to rounding in calcTrancheAtStartOfLiquidation()
+
+> Submitted as High, judged Medium. Solo finding: no other researcher reported it.
 
 ### Summary
 
